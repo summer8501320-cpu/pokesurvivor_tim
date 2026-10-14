@@ -128,6 +128,6 @@ G.Touch = (() => {
     ctx.restore();
   }
 
-  return { init, vector, draw, clearButtons, addButton, reset, safeArea,
+  return { init, vector, draw, clearButtons, addButton, reset, safeArea, resetSafe() { safe = null; },
            get active() { return active; }, get stick() { return stick; } };
 })();

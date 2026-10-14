@@ -14,6 +14,9 @@ G.CHANGELOG = [
   ], chg: [
     ['Partida sólo en este navegador: sin nube, amigos ni ranking.',
      'Saves stay in this browser only: no cloud, friends or leaderboard.']
+  ], fix: [
+    ['iPhone desde la pantalla de inicio: la imagen ya no sale aplastada y los ataques se pueden tocar.',
+     'iPhone from the home screen: the picture is no longer squashed and moves can be tapped.']
   ] },
   { d: '2026-10-14', title: ['Recupera tu cuenta con Gmail', 'Recover your account with Gmail'], new: [
     ['Si juegas con nombre y contraseña, puedes vincular tu Gmail: si un día olvidas la contraseña, entras con Google y es tu misma cuenta. Te lo ofrecemos al entrar.',

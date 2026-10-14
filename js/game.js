@@ -31,6 +31,14 @@ G.Game = (() => {
     ctx = cv.getContext('2d');
     resize();
     addEventListener('resize', resize);
+    // iPhone (sobre todo abierto desde la pantalla de inicio): al girar o al
+    // abrir, el aviso de resize llega antes de que cambie el tamaño real; se
+    // vuelve a medir un poco después (y además se comprueba en cada fotograma).
+    const later = () => { resize(); setTimeout(resize, 120); setTimeout(resize, 400); setTimeout(resize, 1000); };
+    addEventListener('orientationchange', later);
+    addEventListener('pageshow', later);
+    if (window.visualViewport) visualViewport.addEventListener('resize', later);
+    later();
     G.Touch.init(cv);
     // En móvil: al cambiar de app o girarlo en vertical, la partida se pausa.
     document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
@@ -45,6 +53,7 @@ G.Game = (() => {
     // píxeles era de lo que más costaba, y con el pixel art no se nota.
     dpr = Math.min(1.5, window.devicePixelRatio || 1);
     w = cv.clientWidth; h = cv.clientHeight;
+    if (G.Touch.resetSafe) G.Touch.resetSafe();
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
     G.Camera.resize(w, h, dpr);
@@ -572,6 +581,9 @@ G.Game = (() => {
   let loopErrs = 0, errRun = 0;
   function loop(ts) {
     requestAnimationFrame(loop);
+    // Si el tamaño real del canvas ya no es el medido (iPhone al girar), se re-mide:
+    // si no, la imagen sale estirada y los botones no están donde se dibujan.
+    if (cv.clientWidth !== w || cv.clientHeight !== h) resize();
     try { frame(ts); errRun = 0; }
     catch (e) {
       if (loopErrs++ < 5) console.error('[Game] fallo en un fotograma:', e);

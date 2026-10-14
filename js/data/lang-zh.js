@@ -3571,5 +3571,6 @@ G.I18n.add({
   'Versión personal en chino': '個人繁中版',
   'Idioma chino tradicional (con el parche de Kai5106) y fuente pixel china Cubic 11.': '內建繁體中文（採用 Kai5106 的補丁）與中文像素字型「俐方體11號」。',
   'Pestaña Modificador en Ajustes: +10.000 Pokémonedas y más tickets del gacha.': '設定新增「修改器」分頁：寶可幣 +10,000，並可增加扭蛋抽獎券。',
-  'Partida sólo en este navegador: sin nube, amigos ni ranking.': '存檔只保留在此瀏覽器：不使用雲端、好友與排行榜。'
+  'Partida sólo en este navegador: sin nube, amigos ni ranking.': '存檔只保留在此瀏覽器：不使用雲端、好友與排行榜。',
+  'iPhone desde la pantalla de inicio: la imagen ya no sale aplastada y los ataques se pueden tocar.': 'iPhone 從主畫面開啟時，畫面不再被壓扁，招式也能正常點選。'
 }, 'zh');
