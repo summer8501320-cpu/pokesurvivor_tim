@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-14', title: ['Versión personal en chino', 'Personal Chinese version'], new: [
+    ['Idioma chino tradicional (con el parche de Kai5106) y fuente pixel china Cubic 11.',
+     'Traditional Chinese language (from Kai5106\'s patch) and the Cubic 11 Chinese pixel font.'],
+    ['Pestaña Modificador en Ajustes: +10.000 Pokémonedas y más tickets del gacha.',
+     'Modifier tab in Settings: +10,000 PokéCoins and more gacha tickets.']
+  ], chg: [
+    ['Partida sólo en este navegador: sin nube, amigos ni ranking.',
+     'Saves stay in this browser only: no cloud, friends or leaderboard.']
+  ] },
   { d: '2026-10-14', title: ['Recupera tu cuenta con Gmail', 'Recover your account with Gmail'], new: [
     ['Si juegas con nombre y contraseña, puedes vincular tu Gmail: si un día olvidas la contraseña, entras con Google y es tu misma cuenta. Te lo ofrecemos al entrar.',
      'If you play with a name and password, you can link your Gmail: if you ever forget your password, sign in with Google and it is the same account. We offer it when you sign in.']

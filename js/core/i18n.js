@@ -21,9 +21,11 @@ G.I18n = (() => {
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) { /* nada */ }
   const byPath = /\/en(\/|$)/.test(location.pathname) ? 'en' : null;
-  const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || 'es').toLowerCase();
-  const lang = saved === 'es' || saved === 'en' ? saved : byPath || (nav.startsWith('es') ? 'es' : 'en');
-  document.documentElement.lang = lang;
+  // Fork en chino tradicional: por defecto 'zh' (lo que no esté en lang-zh.js sale en inglés).
+  const lang = saved === 'es' || saved === 'en' || saved === 'zh' ? saved : byPath || 'zh';
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : lang;
+  // El canvas no carga la fuente china por sí solo: se pide al empezar.
+  if (lang === 'zh' && document.fonts) document.fonts.load('700 16px Pixelify', '中文').catch(() => {});
 
   const exact = new Map(), exactLow = new Map();
   let patterns = [], frag = null, fragLow = null, fragMap = new Map();
@@ -32,13 +34,21 @@ G.I18n = (() => {
   const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   /** Añade traducciones { 'texto en español': 'English text' }. */
-  function add(dict) {
+  // En chino, el diccionario 'zh' manda; el inglés sólo rellena lo que falte.
+  const zhKeys = new Set();
+  let zhPats = 0;
+  function add(dict, l = 'en') {
+    if (l === 'zh' && lang !== 'zh') return;
+    const zh = l === 'zh' && lang === 'zh';
     const fr = [];
     for (const [es, en] of Object.entries(dict)) {
       if (!en || es === en) continue;
+      if (zh) zhKeys.add(es);
+      else if (zhKeys.has(es)) continue;
       if (es.includes('{x}')) {
         const parts = es.split('{x}').map(reEsc);
-        patterns.push({ re: new RegExp('^' + parts.join('(.+?)') + '$', 'u'), reI: new RegExp('^' + parts.join('(.+?)') + '$', 'iu'), en });
+        const p = { re: new RegExp('^' + parts.join('(.+?)') + '$', 'u'), reI: new RegExp('^' + parts.join('(.+?)') + '$', 'iu'), en };
+        if (zh) patterns.splice(zhPats++, 0, p); else patterns.push(p);
       } else {
         exact.set(es, en);
         exactLow.set(es.toLowerCase(), en);
@@ -98,14 +108,35 @@ G.I18n = (() => {
 
   // ---------------- DOM ----------------
   const ATTRS = ['placeholder', 'title', 'alt', 'aria-label'];
-  const skipEl = el => !!(el && el.closest && el.closest('[translate="no"], script, style, code'));
+  const skipEl = el => {
+    if (!el || !el.closest) return false;
+    if (el.closest('script, style, code')) return true;
+    const no = el.closest('[translate="no"]');
+    // En chino también se traducen las novedades (el parche hacía lo mismo).
+    return !!no && !(lang === 'zh' && no.matches('#news-body > .news-day[translate="no"]'));
+  };
+
+  // ---------------- detalles del chino (del parche de Kai5106) ----------------
+  // "Psíquico" es tipo (超能力) y movimiento (精神強念): se distingue por dónde sale.
+  const PSY = /(?<![\p{L}\p{N}])(?:Psíquico|Psychic)(?![\p{L}\p{N}])/giu;
+  const TYPE_SEL = '.type-chip, .type, .tag-chip';
+  const MOVE_SEL = '.card .nm, #scr-bond .ds, #bond-sub, .move-icons, #starter-info, #dex-detail p, #over-stats b, .bind-slots option, .ban-moves button';
+  const ZH_TYPES = new Set(['一般', '火', '水', '電', '草', '冰', '格鬥', '毒', '地面', '飛行', '超能力', '蟲', '岩石', '幽靈', '龍', '惡', '鋼', '妖精']);
+  function tEl(s, el) {
+    if (lang !== 'zh') return t(s);
+    const typeLabel = el.closest(TYPE_SEL);
+    let r = t(!typeLabel && el.closest(MOVE_SEL) ? s.replace(PSY, '精神強念') : s);
+    const k = r.trim();
+    if (typeLabel && ZH_TYPES.has(k)) r = r.replace(k, k + '系');
+    return r;
+  }
 
   function doText(n) {
     const p = n.parentElement;
     if (!p || skipEl(p)) return;
     const v = n.nodeValue;
     if (n.__tr === v) return;
-    const r = t(v);
+    const r = tEl(v, p);
     n.__tr = r;
     if (r !== v) n.nodeValue = r;
   }
@@ -113,7 +144,7 @@ G.I18n = (() => {
     if (skipEl(el)) return;
     for (const a of ATTRS) {
       const v = el.getAttribute && el.getAttribute(a);
-      if (v) { const r = t(v); if (r !== v) el.setAttribute(a, r); }
+      if (v) { const r = tEl(v, el); if (r !== v) el.setAttribute(a, r); }
     }
   }
   function walk(root) {
@@ -146,7 +177,10 @@ G.I18n = (() => {
     const P = CanvasRenderingContext2D.prototype;
     for (const k of ['fillText', 'strokeText', 'measureText']) {
       const orig = P[k];
-      P[k] = function (s, ...a) { return orig.call(this, typeof s === 'string' ? t(s) : s, ...a); };
+      P[k] = function (s, ...a) {
+        if (typeof s === 'string') s = lang === 'zh' && /^(?:Psíquico|Psychic)(?: \+\d+)?$/iu.test(s.trim()) ? t(s.replace(PSY, '精神強念')) : t(s);
+        return orig.call(this, s, ...a);
+      };
     }
     const oc = window.confirm, oa = window.alert;
     window.confirm = s => oc.call(window, t(s));

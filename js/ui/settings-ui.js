@@ -7,7 +7,7 @@ G.SettingsUI = (() => {
   const $ = G.UI.$;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const VERSION = '1.2 · 2026-10-09';
-  const REPO = 'https://github.com/JPTER78/pokesurvivor';
+  const REPO = 'https://github.com/JPTER78/pokesurvivor'; // proyecto original
   let tab = 'sound';
 
   function init() {
@@ -75,7 +75,7 @@ G.SettingsUI = (() => {
     } else if (tab === 'gfx') {
       const auto = ['baja', 'media', 'alta'][G.Settings.autoLevel];
       box.innerHTML = section('Idioma', 'El juego se recarga al cambiarlo.')
-        + `<div class="chips set-chips" translate="no">${[['es', 'Español'], ['en', 'English']].map(([v, l]) =>
+        + `<div class="chips set-chips" translate="no">${[['zh', '繁體中文'], ['es', 'Español'], ['en', 'English']].map(([v, l]) =>
              `<button class="chip ${G.I18n.lang === v ? 'on' : ''}" data-lang="${v}">${l}</button>`).join('')}</div>`
         + section('Calidad', 'Cuántos efectos y partículas se dibujan. <b>Auto</b> la baja sola si el juego va a tirones (ahora: ' + auto + ').')
         + choice('quality', [['auto', 'Auto'], ['high', 'Alta'], ['mid', 'Media'], ['low', 'Baja']])
@@ -101,6 +101,8 @@ G.SettingsUI = (() => {
            </div>`;
     } else if (tab === 'acc') {
       renderAccount(box);
+    } else if (tab === 'cheat') {
+      renderCheat(box);
     } else {
       box.innerHTML = `<div class="about-logo">PokéSurvivor</div><p class="sub center">Versión ${esc(VERSION)}</p>`
         + `<p class="sub">Juego de fans <b>gratuito y sin ánimo de lucro</b>: sin anuncios ni compras. Pokémon y sus personajes son propiedad de Nintendo, Creatures y GAME FREAK; este proyecto no está afiliado a ellos.</p>`
@@ -110,6 +112,7 @@ G.SettingsUI = (() => {
              <li><b>Datos de los Pokémon:</b> PokéAPI.</li>
              <li><b>Música y sonidos:</b> originales, generados por el propio juego.</li>
              <li><b>Fuente:</b> Pixelify Sans (OFL).</li>
+             <li translate="no"><b>繁體中文：</b>Kai5106「PokéSurvivor 繁體中文補丁」v1.3.0（MIT）· 寶可夢中文名：PokéAPI · 中文字型：俐方體11號 Cubic 11（OFL）</li>
            </ul>`
         + `<div class="row wrap" style="justify-content:center;gap:8px">
              ${window.PS_PAGES ? `<a class="btn small" href="${G.I18n.lang === 'en' ? 'en/guide/' : 'guia/'}" target="_blank">Guía y preguntas</a>
@@ -120,6 +123,37 @@ G.SettingsUI = (() => {
            </div>`;
     }
     wire(box);
+  }
+
+  // ---------------- 修改器 (sólo en este fork: partida local) ----------------
+  const CHEATS = [
+    ['coins', 10000, '寶可幣 +10,000'],
+    ['t1', 10, '單抽券 +10'],
+    ['t1', 100, '單抽券 +100'],
+    ['t10', 1, '十連抽券 +1'],
+    ['t10', 10, '十連抽券 +10']
+  ];
+  function renderCheat(box) {
+    const sv = G.DB.save;
+    if (!sv) { box.innerHTML = '<p class="sub" translate="no">請先登入或建立帳號。</p>'; return; }
+    const tk = sv.tickets || { t1: 0, t10: 0 };
+    box.innerHTML = `<div translate="no"><h3 class="set-h">修改器</h3>`
+      + `<p class="sub">只影響這個瀏覽器裡的存檔。${G.DB.guest ? '<b>目前是訪客，離開後不會保留。</b>' : ''}</p>`
+      + `<div class="set-row"><div class="grow"><b>目前持有</b></div><span class="gold">寶可幣 ${sv.coins.toLocaleString('zh-TW')} · 單抽券 ${tk.t1} · 十連抽券 ${tk.t10}</span></div>`
+      + `<div class="row wrap" style="gap:8px;margin-top:12px">${CHEATS.map(([k, n, l], i) =>
+           `<button class="btn small gold" data-cheat="${i}">${l}</button>`).join('')}</div></div>`;
+    box.querySelectorAll('[data-cheat]').forEach(b => {
+      b.onclick = () => {
+        const [k, n] = CHEATS[+b.dataset.cheat];
+        const s = G.DB.save;
+        if (!s) return;
+        if (k === 'coins') s.coins += n;
+        else { s.tickets = Object.assign({ t1: 0, t10: 0 }, s.tickets); s.tickets[k] += n; }
+        G.DB.commit(true);
+        G.UI.refreshCoins();
+        render();
+      };
+    });
   }
 
   function renderAccount(box) {

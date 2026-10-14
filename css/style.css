@@ -15,6 +15,24 @@
   font-weight: 551 900;
   font-display: block;
 }
+/* Chino: 俐方體11號 (Cubic 11, OFL) dentro de la misma familia, sólo para los
+ * caracteres CJK; así el DOM y el canvas ("Pixelify") lo usan sin tocar nada más. */
+@font-face {
+  font-family: 'Pixelify';
+  src: url('../assets/fonts/Cubic_11.woff2') format('woff2');
+  font-weight: 400 550;
+  font-display: swap;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3040-30FF, U+3100-312F, U+3190-31FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: 'Pixelify';
+  src: url('../assets/fonts/Cubic_11.woff2') format('woff2');
+  font-weight: 551 900;
+  font-display: swap;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3040-30FF, U+3100-312F, U+3190-31FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+html[lang="zh-Hant"] .btn { letter-spacing: 0; }
+html[lang="zh-Hant"] .sub { line-height: 1.55; }
 
 :root {
   --ink: #ffffff;
