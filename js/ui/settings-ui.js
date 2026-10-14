@@ -141,7 +141,19 @@ G.SettingsUI = (() => {
       + `<p class="sub">只影響這個瀏覽器裡的存檔。${G.DB.guest ? '<b>目前是訪客，離開後不會保留。</b>' : ''}</p>`
       + `<div class="set-row"><div class="grow"><b>目前持有</b></div><span class="gold">寶可幣 ${sv.coins.toLocaleString('zh-TW')} · 單抽券 ${tk.t1} · 十連抽券 ${tk.t10}</span></div>`
       + `<div class="row wrap" style="gap:8px;margin-top:12px">${CHEATS.map(([k, n, l], i) =>
-           `<button class="btn small gold" data-cheat="${i}">${l}</button>`).join('')}</div></div>`;
+           `<button class="btn small gold" data-cheat="${i}">${l}</button>`).join('')}</div>`
+      + `<div class="set-row" style="margin-top:12px"><div class="grow"><b>全圖鑑解鎖</b><small>取得全部 ${G.DEX.length} 隻寶可夢，包含閃光版本（目前 ${Object.keys(sv.owned || {}).length} 隻、閃光 ${Object.keys(sv.shiny || {}).length} 隻）。</small></div>
+           <button class="btn small gold" id="cheat-dex">全部解鎖</button></div></div>`;
+    const dexBtn = box.querySelector('#cheat-dex');
+    if (dexBtn) dexBtn.onclick = () => {
+      if (!confirm('確定要解鎖全部寶可夢（含閃光）嗎？')) return;
+      const s = G.DB.save;
+      if (!s) return;
+      for (const m of G.DEX) G.DB.grantShiny(m.dex, 'cheat');
+      G.DB.commit(true);
+      G.UI.refreshCoins();
+      render();
+    };
     box.querySelectorAll('[data-cheat]').forEach(b => {
       b.onclick = () => {
         const [k, n] = CHEATS[+b.dataset.cheat];
